@@ -24,7 +24,6 @@ function world:init(x,y, w, h, gSize, k, pName)
 	self.gameOver = false
 	self.finish = false
 
-	self.colorS = love.graphics.newShader("hsv.glsl")
 	self.colorT = {1,0}
 
 	self.test = false
