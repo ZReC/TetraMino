@@ -1,4 +1,5 @@
 require "class"
+require "mouse"
 require "game"
 require "menu"
 require "world"

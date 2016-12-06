@@ -85,6 +85,9 @@ function menu.load()
 end
 
 function menu.keypressed(key,_,isrepeat)
+	-- BUG FIX
+	if menu.time[3] then return end
+
 	if key == "up" then
 		menu.button = menu.button == 1 and #menu.buttons/2 or menu.button -1
 	elseif key == "down" then

@@ -1,6 +1,6 @@
 game = {}
 
-game.version = "1.1"
+game.version = "1.1.0.1"
 game.state = "start"
 game.oldstate = "start"
 
