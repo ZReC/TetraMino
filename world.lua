@@ -1,6 +1,7 @@
 world = class:new()
 
 function world:init(x,y, w, h, gSize, k, pName)
+
 	self.grid = {}
 	self.gSize = gSize
 
@@ -48,8 +49,8 @@ function world:init(x,y, w, h, gSize, k, pName)
 	end
 	
 	self.combo = {}
-	self.combo.m = 0
-	self.combo.d = {"COMBO !","DOUBLE ","TRIPLE ","MASTER "}
+	self.combo.m = {0, 0, 0, current = 0, ammount = 0, equal = false}
+	self.combo.d = {"COMBO !","DOUBLE ","TRIPLE ","MASTER ", "ULTRA\n", "MIX "}
 	self.combo.t = love.graphics.newText(font.ariblk2, "")
 	self.combo.w = {false, .75,0}
 	self.combo.n = {[1] = 0, [2] = 0, [3] = 0, [4] = 0}
@@ -166,21 +167,60 @@ function world:update(dt)
 
 			for n=1,#self.lineN do self:dLine(self.lineN[n]) end
 
-			self.sText.v = self.sText.v+((#self.lineN*self.h)*#self.lineN)
-			bText(self.sText.t, self.sText.d..self.sText.v)
 
-			if #self.lineN == 4 then self.combo.m = self.combo.m+1 end
-
+			-- Chequea ULTRA COMBO
+			-- Administra el número de combos
+			
 			if #self.lineN > 1 then
+				if self.combo.m.current < 3 then
+					self.combo.m.current = self.combo.m.current+1
+					self.combo.m[self.combo.m.current] = #self.lineN
+				end
+				
+				if self.combo.m.current == 3 then
+					self.combo.m.equal = (self.combo.m[1] == self.combo.m[2] and self.combo.m[2] == self.combo.m[3])
+					for i=1, 3 do
+						self.combo.m.ammount = self.combo.m[i]+self.combo.m.ammount end
+				end
+			
+				-- Pre actualización del SCORE (ULTRA)
+				if self.combo.m.ammount ~= 0 then
+					self.sText.v = self.sText.v+(self.combo.m.equal and self.combo.m.ammount*100 or self.combo.m.ammount*50)
+				end
+			
 				self.combo.n[#self.lineN] = self.combo.n[#self.lineN]+1
 			end
 			self.combo.n[1] = self.combo.n[1]+#self.lineN
+
+			-- Actualización de SCORE
+			self.sText.v = self.sText.v+((#self.lineN*self.h)*#self.lineN)
+
+			bText(self.sText.t, self.sText.d..self.sText.v)
+			
+			if #self.lineN > 1 then
+				local txt
+				
+				if self.combo.m.current == 3 then
+					txt = self.combo.d[5]
+					
+					if self.combo.m.equal then
+						txt = txt..self.combo.d[#self.lineN]
+					else
+						txt = txt..self.combo.d[6]
+					end
+				else
+					txt = self.combo.d[#self.lineN]
+				end
+				
+				txt = txt..self.combo.d[1]
+				
+				bText(self.combo.t, txt, _, "center")
+				self.combo.w[1] = true
+			end			
 			
 			self:check()
 		else
 			self.wLTime[2] = self.wLTime[2]+(dt*self.wLTime[1])
-			
-			if #self.lineN > 1 and #self.lineN < 5 then bText(self.combo.t, self.combo.d[#self.lineN]..self.combo.d[1]) self.combo.w[1] = true end
 		end
 	end
 	
@@ -188,6 +228,9 @@ function world:update(dt)
 		if self.combo.w[3] >= 1 then
 			self.combo.w[1] = false
 			self.combo.w[3] = 0
+			if self.combo.m.current == 3 then
+				self.combo.m = {0, 0, 0, current = 0, ammount = 0, equal = false}
+			end
 		else
 			self.combo.w[3] = self.combo.w[3]+(dt*self.combo.w[2])
 		end
@@ -302,8 +345,12 @@ function world:draw()
 	
 		love.graphics.setColor(255,255,255,128)
 		love.graphics.draw(gfx.combo, x, y, 0, gSize/64)
-		if i <= self.combo.m then
-			love.graphics.setColor(255,0,0)
+		if self.combo.m[i] ~= 0 then
+			
+			love.graphics.setColor(	
+						self.combo.m[i] == 2 and {0,0,255} or
+						self.combo.m[i] == 3 and {0,255,0} or {255,0,0} )
+			
 			love.graphics.draw(gfx.comboI, x, y,0, gSize/64)
 		end
 	end
@@ -316,8 +363,16 @@ function world:draw()
 		local rN = self.olineN
 		local r = rN == 4 and ((self.w*gSize)/2)*n or rN == 3 and self.w*gSize-(self.w*gSize/2)*n or (self.w*gSize)/2 
 
-		love.graphics.setColor(rN == 4 and 255 or 64,rN == 3 and 255 or 64,rN == 2 and 255 or 64)
-		love.graphics.draw(self.combo.t, x+(self.h*gSize)/2, y+r, 0, n, n, self.combo.t:getWidth()/2, self.combo.t:getHeight()/2)
+		if self.combo.m.ammount ~= 0 then
+			if self.combo.m.equal then
+				love.graphics.setColor(rN == 4 and 255 or 64,rN == 3 and 255 or 64,rN == 2 and 255 or 64)
+			else
+				love.graphics.setColor(255,255,255)
+			end
+		else
+			love.graphics.setColor(rN == 4 and 255 or 64,rN == 3 and 255 or 64,rN == 2 and 255 or 64)
+		end
+		love.graphics.draw(self.combo.t, x+(self.h*gSize)/2, y+r, 0, n, n, sW/2, self.combo.t:getHeight()/2)
 	end
 	
 	if self.gameOver then
@@ -325,5 +380,13 @@ function world:draw()
 		local sx = math.sin((self.endGame.w[2]*1.5)/1 * math.pi/2)
 		local sy = math.sin((self.endGame.w[2]*.8)/1 * math.pi/2)
 		love.graphics.draw(self.endGame.t, x+(self.h*gSize)/2, y+(self.w*gSize)/2, r, sx, sy, self.endGame.t:getWidth()/2, self.endGame.t:getHeight()/2)
+	end
+	
+	love.graphics.setColor(255,255,255)
+	
+	local idx = 1
+	for i,v in pairs(self.combo.m) do
+		love.graphics.print(tostring(i).." | "..tostring(v), 50, idx*25)
+		idx = idx+1
 	end
 end

@@ -9,6 +9,8 @@ gfx = {}
 font = {}
 
 function love.load()
+	love.filesystem.remove("NOTE.txt") -- LITTLE EASTER EGG
+
 	sW, sH, sF = love.window.getMode()
 	hZ = sF["refreshrate"]
 	wScale = sH*(1/768)
@@ -36,6 +38,9 @@ function love.load()
 
 	font.ariblk4 = love.graphics.newFont("font/ariblk.ttf", 128*wScale)
 	font.ariblk4:setFilter("nearest", "nearest",0)
+	
+	font.normal	= love.graphics.newFont("font/clacon.ttf", 48)
+	font.normal:setFilter("nearest", "nearest", 0)
 	
 	gfx.tetra = love.graphics.newImage("gfx/piece.png")
 	gfx.tetra:setWrap("repeat", "repeat")
@@ -81,6 +86,10 @@ function love.update(dt)
 	end
 
 	if game.oldstate ~= game.state then game.oldstate = game.state end
+	
+	if game.exit.start then
+		game.exit.fade = game.exit.fade+dt
+	end
 end
 
 function love.draw()
@@ -141,6 +150,56 @@ function love.draw()
 		game.pause.draw()
 		game.play.draw()
 	end
+	
+	-- El metodo es algo extraño, me gusta lo extraño
+	if game.exit.start then
+		love.graphics.setFont(font.normal)
+	
+		love.graphics.setColor(0,0,0,255*math.min(game.exit.fade, 1))
+		love.graphics.rectangle("fill",0,0,sW,sH)
+		
+		if game.exit.fade > 1 then
+			love.graphics.setColor(255,255,255)
+			
+			local txt = "- O.ZSystem VER "..game.version.." | COPYRIGHT "..os.date("%Y").." -\n\n\t"
+			
+			if game.exit.fade > 1.3 then
+				txt = txt.."zrec@dev:~$ "..string.sub("exit", 0, math.min(math.floor((game.exit.fade-1.3)*3), 4))
+				
+				if game.exit.fade > 3 then
+					txt = txt.."\n\tAre you Sure? [ Y/N ] "
+					
+					if game.exit.fade>3.5 then
+						txt = txt.."Y"
+						
+						if game.exit.fade > 4 then
+							
+							txt = txt.."\n\n\tTHANKS TO PLAY!\n\n\tzrec@dev:~$ "
+							if game.exit.fade > 4.5 then
+								
+								txt = txt..string.gsub(string.sub(game.greetings[game.exit.greeting], 0, math.min(math.floor((game.exit.fade-4.5)*8), #game.greetings[game.exit.greeting])), ";", "")
+								if game.exit.fade > 6+(#game.greetings[game.exit.greeting]/8) then
+								
+									if game.exit.greeting == 7 then -- LITTLE EASTER EGG
+										love.filesystem.write("NOTE.txt", "U'r amazing")
+									end
+									
+									love.event.quit(0)
+								end
+							end
+						end
+					end
+				end
+			end
+			
+			if game.exit.fade%.30 > .15 then
+				txt = txt.."█"
+			end
+			
+			love.graphics.print(txt, sW*.015, sH*.015, 0, sH*.001)
+		end
+	end
+	
 	love.graphics.setColor(0,0,0,0)
 end
 
@@ -149,8 +208,17 @@ function love.keypressed(key,_,isrepeat)
 		game.pause.q = true
 	end
 
-	if game.pause.q or (menu.startGame ~= false and game.state == "menu") then return end
-
+	if key == "escape" then
+		if game.state == "menu" then
+			menu.selected = 5
+		end
+		if game.exit.start then
+			love.event.quit(0)
+		end
+	end
+	
+	if game.exit.start or game.pause.q or (menu.startGame ~= false and game.state == "menu") then return end
+	
 	if (game.state == "menu" or game.state == "pause") and isrepeat then return end
 
 	if game.state == "play" or game.state == "pause" then
@@ -176,6 +244,9 @@ function love.keypressed(key,_,isrepeat)
 
 		elseif key == "escape" then
 			game.state = "play"
+			
+			-- Reiniciar el menu de pausa
+			game.pause.s = 1
 		end
 
 		if game.state ~= "pause" then
@@ -200,14 +271,39 @@ function love.keyreleased(key)
 	end
 end
 
-function bText(t, v)
+function love.quit()
+	if not game.exit.start then
+		if game.state == "menu" then
+			if menu.selected == 5 then
+				game.exit.start = true
+			end
+			
+		elseif game.state == "play" or game.state == "pause" then
+			if game.pause.s == 2 then
+				love.keypressed("return")
+				return true
+			end
+			
+			game.pause.s = 2
+		end
+		
+		love.keypressed("escape")
+		return true
+	end
+	-- Iniciado game.exit.start puede salir del juego cuando quiera.
+end
+
+function bText(t, v, w, a)
 	if not t then return end
+	w = w or sW
+	a = a or "left"
+	
 	t:set()
-	t:add({{0,0,0}, v},0,0)
-	t:add({{0,0,0}, v},0,2)
-	t:add({{0,0,0}, v},2,0)
-	t:add({{0,0,0}, v},2,2)
-	t:add({{255,255,255}, v},1,1)
+	t:addf({{0, 0, 0}, v}, w, a, 0, 0)
+	t:addf({{0, 0, 0}, v}, w, a, 0, 2)
+	t:addf({{0, 0, 0}, v}, w, a, 2, 0)
+	t:addf({{0, 0, 0}, v}, w, a, 2, 2)
+	t:addf({{255, 255, 255}, v}, w, a, 1, 1)
 end
 
 function rgbToHsv(r, g, b)

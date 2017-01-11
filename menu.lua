@@ -33,51 +33,61 @@ function menu.load()
 		menu.p[i]:setAreaSpread("uniform", sW,sH)
 	end
 
-	menu.buttons = {
+	menu.button = {
 		{
-			["name"] = "1 PLAYER",
-			["x"] = sW/2,
-			["y"] = sH/10*5.5
+			enable	= true,
+			name	= "1 PLAYER",
+			x		= sW/2,
+			y		= sH/10*5
 		},
 		{
-			["name"] = "2 PLAYERS",
-			["x"] = sW/2,
-			["y"] =  sH/10*6
+			enable	= true,
+			name	= "2 PLAYERS",
+			x		= sW/2,
+			y		= sH/10*5.5
 		},
 		{
-			["name"] = "MULTIPLAYER",
-			["x"] = sW/2,
-			["y"] = sH/10*6.5
+			enable	= false,
+			name	= "MULTIPLAYER",
+			x		= sW/2,
+			y		= sH/10*6
 		},
 		{
-			["name"] = "OPTIONS",
-			["x"] = sW/2,
-			["y"] = sH/10*7.5
+			enable	= false,
+			name	= "OPTIONS",
+			x		= sW/2,
+			y		= sH/10*7
+		},
+		{
+			enable	= true,
+			name	= "EXIT",
+			x		= sW/2,
+			y		= sH/10*8
 		}
-	}menu.button = 1
+	}menu.selected = 1
 
 	menu.text = {}
 	
-	for i = 1, #menu.buttons do
+	for i = 1, #menu.button do
 		menu.text[i] = {}
 		menu.text[i].t = love.graphics.newText(font.ariblkM, "")
-		bText(menu.text[i].t, menu.buttons[i].name)
+		bText(menu.text[i].t, menu.button[i].name)
 	end
 	
-	menu.arrows = {[1] = {}, [2] = {}}
-	menu.arrows[1].t = love.graphics.newText(font.ariblkM, "►")
-	menu.arrows[2].t = love.graphics.newText(font.ariblkM, "◄")
+	menu.arrow = {[1] = {}, [2] = {}}
+	menu.arrow[1].t = love.graphics.newText(font.ariblkM, "►")
+	menu.arrow[2].t = love.graphics.newText(font.ariblkM, "◄")
 
-	bText(menu.arrows[1].t, "►")
-	bText(menu.arrows[2].t, "◄")
+	bText(menu.arrow[1].t, "►")
+	bText(menu.arrow[2].t, "◄")
 	
 	menu.tP = love.graphics.newParticleSystem(gfx.menuP, 64)
 	menu.tP:setParticleLifetime(2,1,3)
 	menu.tP:setEmissionRate(8)
 	menu.tP:setSizes(wScale,1.2*wScale,wScale)
 	menu.tP:setColors(255,255,255,0, 255,255,255,192, 255,255,255,0)
-	menu.tP:setAreaSpread("uniform", menu.text[menu.button].t:getWidth()/2, menu.text[menu.button].t:getHeight()/2)
-	menu.tP:setPosition(menu.buttons[menu.button].x, menu.buttons[menu.button].y+menu.text[menu.button].t:getHeight()/2)
+	menu.tP:setAreaSpread("uniform", menu.text[menu.selected].t:getWidth()/2, menu.text[menu.selected].t:getHeight()/2)
+	menu.tP:setPosition(menu.button[menu.selected].x, menu.button[menu.selected].y+menu.text[menu.selected].t:getHeight()/2)
 	
 	menu.time = {2,1, true}
 	
@@ -89,14 +99,24 @@ function menu.keypressed(key,_,isrepeat)
 	if menu.time[3] then return end
 
 	if key == "up" then
-		menu.button = menu.button == 1 and #menu.buttons/2 or menu.button -1
+		repeat
+			menu.selected = menu.selected == 1 and #menu.button or menu.selected -1
+		
+		until menu.button[menu.selected].enable
 	elseif key == "down" then
-		menu.button = menu.button == #menu.buttons/2 and 1 or menu.button +1
+		repeat
+			menu.selected = menu.selected == #menu.button and 1 or menu.selected +1
+			
+		until menu.button[menu.selected].enable
+		
 	elseif key == "return" then
-		if menu.button == 1 then
+		if menu.selected == 1 then
 			menu.startGame = 1
-		elseif menu.button == 2 then
+		elseif menu.selected == 2 then
 			menu.startGame = 2
+		elseif menu.selected == 5 then
+			game.exit.start = true
+			game.exit.greeting = math.random(#game.greetings)
 		end
 	end
 end
@@ -138,30 +158,38 @@ function menu.draw()
 		love.graphics.draw(menu.p[i], 0, 0)
 	end
 
-	for i=1, #menu.buttons do
-		if i == menu.button then
-			menu.tP:setAreaSpread("uniform", menu.text[menu.button].t:getWidth()/2, menu.text[menu.button].t:getHeight()/2)
-			menu.tP:setPosition(menu.buttons[menu.button].x, menu.buttons[menu.button].y+menu.text[menu.button].t:getHeight()/2)
+	for i=1, #menu.button do
+		local alphabutton = 192
+		
+		if i == menu.selected then
+			alphabutton = 255
+			menu.tP:setAreaSpread("uniform", menu.text[menu.selected].t:getWidth()/2, menu.text[menu.selected].t:getHeight()/2)
+			menu.tP:setPosition(menu.button[menu.selected].x, menu.button[menu.selected].y+menu.text[menu.selected].t:getHeight()/2)
 			love.graphics.draw(menu.tP, 0,0)
 			love.graphics.setColor(255,255,255,192)
 		else
 			love.graphics.setColor(255,255,255,64)
 		end
 
-		love.graphics.setColor(i>2 and 64 or 255,i>2 and 64 or 255,i>2 and 64 or 255,i>2 and 32 or 255)
-		love.graphics.draw(menu.text[i].t, menu.buttons[i].x-menu.text[i].t:getWidth()/2, menu.buttons[i].y)	
+		love.graphics.setColor(menu.button[i].enable and {255, 255, 255, alphabutton} or {128, 128, 128, 96})
+		love.graphics.draw(menu.text[i].t, menu.button[i].x-menu.text[i].t:getWidth()/2, menu.button[i].y)	
 	end
+
 	
 	love.graphics.setColor(255,255,255)
-	love.graphics.draw(menu.arrows[1].t,
-		menu.buttons[menu.button].x-(menu.text[menu.button].t:getWidth()/2+menu.arrows[1].t:getWidth()),
-		menu.buttons[menu.button].y-(menu.arrows[1].t:getHeight()/2-menu.text[menu.button].t:getHeight()/2)
-	)
+	
+	local arrowAx, arrowAy =
+								menu.button[menu.selected].x-(menu.text[menu.selected].t:getWidth()/2+menu.arrow[1].t:getWidth()*2),
+								menu.button[menu.selected].y-(menu.arrow[1].t:getHeight()/2-menu.text[menu.selected].t:getHeight()/2)
+	
+	local arrowBx, arrowBy =
+								menu.button[menu.selected].x+(menu.text[menu.selected].t:getWidth()/2+menu.arrow[1].t:getWidth()),
+								menu.button[menu.selected].y-(menu.arrow[2].t:getHeight()/2-menu.text[menu.selected].t:getHeight()/2)
 
-	love.graphics.draw(menu.arrows[2].t,
-		menu.buttons[menu.button].x+menu.text[menu.button].t:getWidth()/2,
-		menu.buttons[menu.button].y-(menu.arrows[2].t:getHeight()/2-menu.text[menu.button].t:getHeight()/2)
-	)
+	local tmpSIN = math.sin((math.pi*love.timer.getTime())%math.pi)
+	
+	love.graphics.draw(menu.arrow[1].t,	arrowAx+tmpSIN*menu.arrow[1].t:getWidth(), arrowAy)
+	love.graphics.draw(menu.arrow[2].t, arrowBx-tmpSIN*menu.arrow[2].t:getWidth(), arrowBy)
 
 	love.graphics.draw(gfx.zrec,sW/2,sH/6,0,wScale*.5,wScale*.5,gfx.zrec:getWidth()/2, gfx.zrec:getHeight()/2)
 	love.graphics.draw(gfx.zrecG,((gfx.zrec:getWidth()/2)*(wScale*.5))+(sW/2),((gfx.zrec:getHeight()/2)*(wScale*.5))+(sH/6),0,wScale*.5,wScale*.5, gfx.zrecG:getWidth()/1.3, gfx.zrecG:getHeight()/1.3)

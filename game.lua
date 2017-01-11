@@ -1,19 +1,23 @@
 game = {}
 
-game.version = "1.1.0.1"
+game.version = "1.1.0.9"
 game.state = "start"
 game.oldstate = "start"
 
-game.worlds = {}
+game.worlds		= {}
 
-game.play = {}
+game.play		= {}
 
-game.pause = {}
+game.pause		= {}
 
-game.pause.t = {2,0,0,0,false}
-game.pause.s = 1
-game.pause.m = false
-game.pause.q = false
+game.pause.t	= {2,0,0,0,false}
+game.pause.s	= 1
+game.pause.m	= false
+game.pause.q	= false
+
+game.greetings	= {"See you next time!", "Bye Bye :;D", "Have fun!", "See you!", "Take care :;)", "Seeks the Tri;;for;;ce..", "\n\t\tGoodbye, ;Player, ;honey! ;;;It'll be okay. ;;;Just read the note!"}
+
+game.exit		= {start = false, fade = 0, greeting = 0}
 
 function game.start(t, v)
 	t = t or 1 -- 1 player
