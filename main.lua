@@ -299,11 +299,28 @@ function bText(t, v, w, a)
 	a = a or "left"
 	
 	t:set()
-	t:addf({{0, 0, 0}, v}, w, a, 0, 0)
-	t:addf({{0, 0, 0}, v}, w, a, 0, 2)
-	t:addf({{0, 0, 0}, v}, w, a, 2, 0)
-	t:addf({{0, 0, 0}, v}, w, a, 2, 2)
-	t:addf({{255, 255, 255}, v}, w, a, 1, 1)
+	
+	if type(v) == "table" then
+		local str = ""
+		
+		for _, value in pairs(v) do
+			if type(value) == "string" then
+				str = str..value
+			end
+		end
+		t:addf({{0, 0, 0}, str}, w, a, 0, 0)
+		t:addf({{0, 0, 0}, str}, w, a, 0, 2)
+		t:addf({{0, 0, 0}, str}, w, a, 2, 0)
+		t:addf({{0, 0, 0}, str}, w, a, 2, 2)
+		
+		t:addf(v, w, a, 1, 1)
+	else
+		t:addf({{0, 0, 0}, v}, w, a, 0, 0)
+		t:addf({{0, 0, 0}, v}, w, a, 0, 2)
+		t:addf({{0, 0, 0}, v}, w, a, 2, 0)
+		t:addf({{0, 0, 0}, v}, w, a, 2, 2)
+		t:addf({{255, 255, 255}, v}, w, a, 1, 1)
+	end
 end
 
 function rgbToHsv(r, g, b)

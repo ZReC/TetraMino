@@ -39,6 +39,6 @@ function love.conf(t)
     t.modules.window		= true
     t.modules.thread		= true
 	
-	t.identity				= "TetraMino"
 	t.release				= true
+	t.identity				= "TetraMino"
 end

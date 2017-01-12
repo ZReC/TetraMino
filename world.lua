@@ -201,18 +201,22 @@ function world:update(dt)
 				local txt
 				
 				if self.combo.m.current == 3 then
-					txt = self.combo.d[5]
 					
 					if self.combo.m.equal then
-						txt = txt..self.combo.d[#self.lineN]
+						txt = self.combo.d[5]..self.combo.d[#self.lineN]..self.combo.d[1]
 					else
-						txt = txt..self.combo.d[6]
+						local str = self.combo.d[5]..self.combo.d[6]..self.combo.d[1]
+						txt = {}
+					
+						for i=1, #str do
+							txt[#txt+1] = {math.random(128, 255), math.random(128, 255), math.random(128, 255)}
+							txt[#txt+1] = string.sub(str, i, i)
+						end
+					
 					end
 				else
-					txt = self.combo.d[#self.lineN]
+					txt = self.combo.d[#self.lineN]..self.combo.d[1]
 				end
-				
-				txt = txt..self.combo.d[1]
 				
 				bText(self.combo.t, txt, _, "center")
 				self.combo.w[1] = true
@@ -380,13 +384,5 @@ function world:draw()
 		local sx = math.sin((self.endGame.w[2]*1.5)/1 * math.pi/2)
 		local sy = math.sin((self.endGame.w[2]*.8)/1 * math.pi/2)
 		love.graphics.draw(self.endGame.t, x+(self.h*gSize)/2, y+(self.w*gSize)/2, r, sx, sy, self.endGame.t:getWidth()/2, self.endGame.t:getHeight()/2)
-	end
-	
-	love.graphics.setColor(255,255,255)
-	
-	local idx = 1
-	for i,v in pairs(self.combo.m) do
-		love.graphics.print(tostring(i).." | "..tostring(v), 50, idx*25)
-		idx = idx+1
 	end
 end
