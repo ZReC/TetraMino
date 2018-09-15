@@ -9,8 +9,6 @@ gfx = {}
 font = {}
 
 function love.load()
-	love.filesystem.remove("NOTE.txt") -- LITTLE EASTER EGG
-
 	sW, sH, sF = love.window.getMode()
 	hZ = sF["refreshrate"]
 	wScale = sH*(1/768)
@@ -49,8 +47,7 @@ function love.load()
 	gfx.menuP = love.graphics.newImage("gfx/menup.png")
 	gfx.star = love.graphics.newImage("gfx/star.png")
 	gfx.menuGN = love.graphics.newImage("gfx/menuGN.png")
-	gfx.zrec = love.graphics.newImage("gfx/zrec.png")
-	gfx.zrecG = love.graphics.newImage("gfx/zrec-games.png")
+	gfx.zrec = love.graphics.newImage("gfx/z.png")
 	
 	gfx.combo = love.graphics.newImage("gfx/combo.png")
 	gfx.comboI = love.graphics.newImage("gfx/comboI.png")
@@ -97,15 +94,13 @@ function love.draw()
 		if waitStartT[2] > 3 then
 			game.state = "menu"
 		end
-		love.graphics.draw(gfx.zrec,sW/2,sH/2,0,wScale,wScale,gfx.zrec:getWidth()/2, gfx.zrec:getHeight()/2)
 		
-		love.graphics.setColor(255,255,255,waitStartT[2] > 1 and 255 or 0)
-		local bounce = outBounce(waitStartT[2] < 2 and waitStartT[2]-1 or 1)
-		love.graphics.draw(gfx.zrecG,((gfx.zrec:getWidth()/2)*wScale)+(sW/2),((gfx.zrec:getHeight()/2)*wScale)+(sH/2),0,wScale*bounce,wScale*bounce, gfx.zrecG:getWidth()/1.3, gfx.zrecG:getHeight()/1.3)
-			
-		love.graphics.setColor(0,0,0,255*(waitStartT[2] < 1 and 1-waitStartT[2] or waitStartT[2] > 2 and waitStartT[2]-2 or 0))
+		love.graphics.setBackgroundColor(133/256,22/256,22/256)
+		love.graphics.draw(gfx.zrec,sW/2,sH/2,0,wScale/4,wScale/4,gfx.zrec:getWidth()/2, gfx.zrec:getHeight()/2)
+		
+		love.graphics.setColor(0,0,0, (waitStartT[2] < 1 and 1-waitStartT[2] or waitStartT[2] > 2 and waitStartT[2]-2 or 0))
 		love.graphics.rectangle("fill", 0,0,sW,sH)
-		love.graphics.setColor(255,255,255)
+		love.graphics.setColor(1,1,1)
 		return
 	end
 
@@ -151,56 +146,14 @@ function love.draw()
 		game.play.draw()
 	end
 	
-	-- El metodo es algo extraño, me gusta lo extraño
 	if game.exit.start then
-		love.graphics.setFont(font.normal)
-	
-		love.graphics.setColor(0,0,0,255*math.min(game.exit.fade, 1))
+		love.graphics.setColor(0,0,0, game.exit.fade)
 		love.graphics.rectangle("fill",0,0,sW,sH)
-		
 		if game.exit.fade > 1 then
-			love.graphics.setColor(255,255,255)
-			
-			local txt = "- O.ZSystem VER "..game.version.." | COPYRIGHT "..os.date("%Y").." -\n\n\t"
-			
-			if game.exit.fade > 1.3 then
-				txt = txt.."zrec@dev:~$ "..string.sub("exit", 0, math.min(math.floor((game.exit.fade-1.3)*3), 4))
-				
-				if game.exit.fade > 3 then
-					txt = txt.."\n\tAre you Sure? [ Y/N ] "
-					
-					if game.exit.fade>3.5 then
-						txt = txt.."Y"
-						
-						if game.exit.fade > 4 then
-							
-							txt = txt.."\n\n\tTHANKS TO PLAY!\n\n\tzrec@dev:~$ "
-							if game.exit.fade > 4.5 then
-								
-								txt = txt..string.gsub(string.sub(game.greetings[game.exit.greeting], 0, math.min(math.floor((game.exit.fade-4.5)*8), #game.greetings[game.exit.greeting])), ";", "")
-								if game.exit.fade > 6+(#game.greetings[game.exit.greeting]/8) then
-								
-									if game.exit.greeting == 7 then -- LITTLE EASTER EGG
-										love.filesystem.write("NOTE.txt", "U'r amazing")
-									end
-									
-									love.event.quit(0)
-								end
-							end
-						end
-					end
-				end
-			end
-			
-			if game.exit.fade%.30 > .15 then
-				txt = txt.."█"
-			end
-			
-			love.graphics.print(txt, sW*.015, sH*.015, 0, sH*.001)
+			love.event.quit(0)
 		end
-	end
-	
-	love.graphics.setColor(0,0,0,0)
+	else
+		love.graphics.setColor(0,0,0,0) end
 end
 
 function love.keypressed(key,_,isrepeat)
@@ -298,7 +251,7 @@ function bText(t, v, w, a)
 	w = w or sW
 	a = a or "left"
 	
-	t:set()
+	t:clear()
 	
 	if type(v) == "table" then
 		local str = ""
@@ -319,12 +272,12 @@ function bText(t, v, w, a)
 		t:addf({{0, 0, 0}, v}, w, a, 0, 2)
 		t:addf({{0, 0, 0}, v}, w, a, 2, 0)
 		t:addf({{0, 0, 0}, v}, w, a, 2, 2)
-		t:addf({{255, 255, 255}, v}, w, a, 1, 1)
+		t:addf({{1, 1, 1}, v}, w, a, 1, 1)
 	end
 end
 
 function rgbToHsv(r, g, b)
-  r, g, b = r / 255, g / 255, b / 255
+  r, g, b = r , g , b
   local max, min = math.max(r, g, b), math.min(r, g, b)
   local h, s, v
   v = max
@@ -366,5 +319,5 @@ function hsvToRgb(h, s, v)
   elseif i == 5 then r, g, b = v, p, q
   end
 
-  return r * 255, g * 255, b * 255
+  return r, g, b
 end

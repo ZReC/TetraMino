@@ -31,10 +31,11 @@ function world:init(x,y, w, h, gSize, k, pName)
 	self.lineN = false
 	self.olineN = 0
 	self.wLTime = {2,0}
-	
-	self.tetra = tetra:new(tetraForms[love.math.random(7)], self, {love.math.random(64,255),love.math.random(64,255),love.math.random(64,255)})
-	self.tetranext = tetraForms[love.math.random(7)]
-	self.tetranextC = {love.math.random(64,255),love.math.random(64,255),love.math.random(64,255)}
+
+	self.tetra = tetra:new(love.math.random(7), self)
+	self.tetra.inGame = true
+	self.tetra.isDrawn = true
+	self.tetranext = tetra:new(love.math.random(7), self)
 	
 	self.sText = {}
 
@@ -45,7 +46,7 @@ function world:init(x,y, w, h, gSize, k, pName)
 	
 	self.bPoints = {}
 	for i = 1, self.h*gSize do
-		self.bPoints[i] = math.sin(((i/(self.h*gSize))*2)/1 * math.pi/2)*128
+		self.bPoints[i] = math.sin(((i/(self.h*gSize))*2) * math.pi/2)*(1/2)
 	end
 	
 	self.combo = {}
@@ -152,10 +153,15 @@ function world:update(dt)
  
 		if self.tetra.inGame then
 			self.tetra:update(dt)
+			if self.tetranext then
+				self.tetranext:update(dt)
+			end
+
 		elseif not self.test then
-			self.tetra:init(self.tetranext, self, self.tetranextC)
-			self.tetranext = tetraForms[love.math.random(7)]
-			self.tetranextC = {love.math.random(64,255),love.math.random(64,255),love.math.random(64,255)}
+			self.tetra = self.tetranext
+			self.tetra.inGame = true
+			self.tetranext.isDrawn = true
+			self.tetranext = tetra:new(love.math.random(7), self)
 		end
 	end
 	
@@ -209,7 +215,7 @@ function world:update(dt)
 						txt = {}
 					
 						for i=1, #str do
-							txt[#txt+1] = {math.random(128, 255), math.random(128, 255), math.random(128, 255)}
+							txt[#txt+1] = {math.random((1/4), 1), math.random((1/4), 1), math.random((1/4), 1)}
 							txt[#txt+1] = string.sub(str, i, i)
 						end
 					
@@ -267,7 +273,7 @@ function world:draw()
 	local gSize = self.gSize
 	local x,y = self.position.x, self.position.y
 	
-	love.graphics.setColor(16,16,16,32)
+	love.graphics.setColor((1/16),(1/16),(1/16),(1/8))
 	love.graphics.rectangle("fill",x,y,self.h*gSize,self.w*gSize)
 	love.graphics.draw(gfx.tetra, self.imageq, x, y)
 	
@@ -307,7 +313,7 @@ function world:draw()
 					r,g,b = hsvToRgb(h,math.max(s-self.colorT[2]*s, 0),v)
 				end
 				
-				love.graphics.setColor(r,g,b,nDL and 255 or (1-self.wLTime[2])*255)				
+				love.graphics.setColor(r,g,b,nDL and 1 or (1-self.wLTime[2]))
 				love.graphics.draw(gfx.tetra, (x+(gSize*j)-gSize),(y+(gSize*i)-gSize), 0, gSize/64)
 			end
 		end
@@ -316,50 +322,51 @@ function world:draw()
 	self.tetra:draw()
 
 	if self.tetra.position.y > 1 then
-
-		for i=1, #self.tetranext do
+		self.tetranext.isDrawn = true
+		self.tetranext:draw()
+	--[[	for i=1, #self.tetranext do
 			for j=1, #self.tetranext[i] do
 				if self.tetranext[i][j] then	
-					local r,g,b = unpack(self.tetranextC)
-					love.graphics.setColor(r,g,b,self.tetra.position.y > 2 and 128 or 128*self.tetra.yfloat)
+					local r,g,b = unpack(self.tetra.c)
+					love.graphics.setColor(r,g,b,self.tetra.position.y > 2 and (1/2) or (1/2)*self.tetra.yfloat)
 					love.graphics.draw(gfx.tetra, x+(((self.startPos*gSize)+gSize*j)-gSize), y+((gSize*i)-gSize), 0, gSize/64)
 				end
 			end
-		end			
+		end		]]	
 	end
 
 	love.graphics.setLineWidth(self.lW)
-	love.graphics.setColor(255,255,255,64)
+	love.graphics.setColor(1,1,1,(1/4))
 	love.graphics.rectangle("line",x-self.lW/2,y-self.lW/2,self.h*gSize+self.lW,self.w*gSize+self.lW)
-	love.graphics.setColor(255,255,255,128)
+	love.graphics.setColor(1,1,1,(1/2))
 	love.graphics.rectangle("line",x-self.lW/1.2,y-self.lW/1.2,self.h*gSize+self.lW/.6,self.w*gSize+self.lW/.6)
 
 	love.graphics.setLineWidth(1)
 	for i=1, self.h*gSize do
-		love.graphics.setColor(255,255,255,self.bPoints[i])
+		love.graphics.setColor(1,1,1,self.bPoints[i])
 		love.graphics.points(x+i,y+gSize*2)
 	end
 
-	love.graphics.setColor(255,255,255,192)
+	love.graphics.setColor(1,1,1,(3/4))
 	love.graphics.draw(self.sText.t,x-self.lW,y-self.sText.t:getHeight()-self.lW)
 	love.graphics.draw(self.pName.t,x+self.h*gSize-self.pName.t:getWidth()+self.lW,y-self.sText.t:getHeight()-self.lW)
 	
 	for i=1, 3 do
 		local x,y = x+(self.h-i)*gSize+self.lW-(self.lW/2*i)+self.lW/2,y+self.w*gSize+self.lW+self.lW/2
 	
-		love.graphics.setColor(255,255,255,128)
+		love.graphics.setColor(1,1,1,(1/2))
 		love.graphics.draw(gfx.combo, x, y, 0, gSize/64)
 		if self.combo.m[i] ~= 0 then
 			
 			love.graphics.setColor(	
-						self.combo.m[i] == 2 and {0,0,255} or
-						self.combo.m[i] == 3 and {0,255,0} or {255,0,0} )
+						self.combo.m[i] == 2 and {0,0,1} or
+						self.combo.m[i] == 3 and {0,1,0} or {1,0,0} )
 			
 			love.graphics.draw(gfx.comboI, x, y,0, gSize/64)
 		end
 	end
 	
-	love.graphics.setColor(255,255,255)
+	love.graphics.setColor(1,1,1)
 	love.graphics.draw(self.timeInGame.t, x-self.lW,y+self.w*gSize+self.lW)
 	
 	if self.combo.w[1] then
@@ -369,18 +376,18 @@ function world:draw()
 
 		if self.combo.m.ammount ~= 0 then
 			if self.combo.m.equal then
-				love.graphics.setColor(rN == 4 and 255 or 64,rN == 3 and 255 or 64,rN == 2 and 255 or 64)
+				love.graphics.setColor(rN == 4 and 1 or (1/4),rN == 3 and 1 or (1/4),rN == 2 and 1 or (1/4))
 			else
-				love.graphics.setColor(255,255,255)
+				love.graphics.setColor(1,1,1)
 			end
 		else
-			love.graphics.setColor(rN == 4 and 255 or 64,rN == 3 and 255 or 64,rN == 2 and 255 or 64)
+			love.graphics.setColor(rN == 4 and 1 or (1/4),rN == 3 and 1 or (1/4),rN == 2 and 1 or (1/4))
 		end
 		love.graphics.draw(self.combo.t, x+(self.h*gSize)/2, y+r, 0, n, n, sW/2, self.combo.t:getHeight()/2)
 	end
 	
 	if self.gameOver then
-		love.graphics.setColor(255,255,255)
+		love.graphics.setColor(1,1,1)
 		local sx = math.sin((self.endGame.w[2]*1.5)/1 * math.pi/2)
 		local sy = math.sin((self.endGame.w[2]*.8)/1 * math.pi/2)
 		love.graphics.draw(self.endGame.t, x+(self.h*gSize)/2, y+(self.w*gSize)/2, r, sx, sy, self.endGame.t:getWidth()/2, self.endGame.t:getHeight()/2)

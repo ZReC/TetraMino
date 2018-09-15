@@ -1,7 +1,7 @@
 menu = {}
 
 function menu.load()
-	love.graphics.setBackgroundColor(20,20,107)
+	love.graphics.setBackgroundColor(5/64,5/64,107/256)
 
 	menu.p = {}
 
@@ -27,10 +27,10 @@ function menu.load()
 		menu.p[i]:setEmissionRate(7)
 		menu.p[i]:setLinearAcceleration(10, 10, -10, -10)
 
-		menu.p[i]:setColors(255,255,255,0, 255,255,255,128, 255,255,255,0)
+		menu.p[i]:setColors(1,1,1,0, 1,1,1,(1/2), 1,1,1,0)
 		menu.p[i]:setRelativeRotation(true)
 
-		menu.p[i]:setAreaSpread("uniform", sW,sH)
+		menu.p[i]:setEmissionArea("uniform", sW,sH)
 	end
 
 	menu.button = {
@@ -85,8 +85,8 @@ function menu.load()
 	menu.tP:setParticleLifetime(2,1,3)
 	menu.tP:setEmissionRate(8)
 	menu.tP:setSizes(wScale,1.2*wScale,wScale)
-	menu.tP:setColors(255,255,255,0, 255,255,255,192, 255,255,255,0)
-	menu.tP:setAreaSpread("uniform", menu.text[menu.selected].t:getWidth()/2, menu.text[menu.selected].t:getHeight()/2)
+	menu.tP:setColors(1,1,1,0, 1,1,1,(3/4), 1,1,1,0)
+	menu.tP:setEmissionArea("uniform", menu.text[menu.selected].t:getWidth()/2, menu.text[menu.selected].t:getHeight()/2)
 	menu.tP:setPosition(menu.button[menu.selected].x, menu.button[menu.selected].y+menu.text[menu.selected].t:getHeight()/2)
 	
 	menu.time = {2,1, true}
@@ -152,31 +152,31 @@ function menu.draw()
 	love.graphics.draw(gfx.bgf,0,0,0,sW/1600,sH/900)
 	love.graphics.draw(gfx.bgf,sW,sH,math.pi,sW/1600,sH/900)
 
-	love.graphics.setColor(255,255,255)
+	love.graphics.setColor(1,1,1)
 
 	for i = 1, 7 do
 		love.graphics.draw(menu.p[i], 0, 0)
 	end
 
 	for i=1, #menu.button do
-		local alphabutton = 192
+		local alphabutton = (3/4)
 		
 		if i == menu.selected then
-			alphabutton = 255
-			menu.tP:setAreaSpread("uniform", menu.text[menu.selected].t:getWidth()/2, menu.text[menu.selected].t:getHeight()/2)
+			alphabutton = 1
+			menu.tP:setEmissionArea("uniform", menu.text[menu.selected].t:getWidth()/2, menu.text[menu.selected].t:getHeight()/2)
 			menu.tP:setPosition(menu.button[menu.selected].x, menu.button[menu.selected].y+menu.text[menu.selected].t:getHeight()/2)
 			love.graphics.draw(menu.tP, 0,0)
-			love.graphics.setColor(255,255,255,192)
+			love.graphics.setColor(1,1,1,(3/4))
 		else
-			love.graphics.setColor(255,255,255,64)
+			love.graphics.setColor(1,1,1,(1/4))
 		end
 
-		love.graphics.setColor(menu.button[i].enable and {255, 255, 255, alphabutton} or {128, 128, 128, 96})
+		love.graphics.setColor(menu.button[i].enable and {1, 1, 1, alphabutton} or {(1/2), (1/2), (1/2), (3/8)})
 		love.graphics.draw(menu.text[i].t, menu.button[i].x-menu.text[i].t:getWidth()/2, menu.button[i].y)	
 	end
 
 	
-	love.graphics.setColor(255,255,255)
+	love.graphics.setColor(1,1,1)
 	
 	local arrowAx, arrowAy =
 								menu.button[menu.selected].x-(menu.text[menu.selected].t:getWidth()/2+menu.arrow[1].t:getWidth()*2),
@@ -191,21 +191,18 @@ function menu.draw()
 	love.graphics.draw(menu.arrow[1].t,	arrowAx+tmpSIN*menu.arrow[1].t:getWidth(), arrowAy)
 	love.graphics.draw(menu.arrow[2].t, arrowBx-tmpSIN*menu.arrow[2].t:getWidth(), arrowBy)
 
-	love.graphics.draw(gfx.zrec,sW/2,sH/6,0,wScale*.5,wScale*.5,gfx.zrec:getWidth()/2, gfx.zrec:getHeight()/2)
-	love.graphics.draw(gfx.zrecG,((gfx.zrec:getWidth()/2)*(wScale*.5))+(sW/2),((gfx.zrec:getHeight()/2)*(wScale*.5))+(sH/6),0,wScale*.5,wScale*.5, gfx.zrecG:getWidth()/1.3, gfx.zrecG:getHeight()/1.3)
-
-	love.graphics.draw(gfx.menuGN,sW/2,sH/3,0,wScale,wScale,gfx.menuGN:getWidth()/2,gfx.menuGN:getHeight()/2)
+	love.graphics.draw(gfx.menuGN,sW/2,sH/4,0,wScale,wScale,gfx.menuGN:getWidth()/2,gfx.menuGN:getHeight()/2)
 	
-	love.graphics.setColor(255,255,255,128)
-	love.graphics.print("Ver. "..game.version, 0, sH-sH/64)
+	love.graphics.setColor(1,1,1,(1/2))
+	love.graphics.print(game.name.." "..game.version.." - ".."Contact me: m.me/DrZReC or t.me/DrZReC", 0, sH-sH/64)
 	
 	if menu.startGame ~= false then
-		love.graphics.setColor(255,255,255,255*menu.time[2])
+		love.graphics.setColor(1,1,1,menu.time[2])
 		love.graphics.rectangle("fill",0,0,sW,sH)
 	end
 	
 	if menu.time[3] then
-		love.graphics.setColor(0,0,0,255*menu.time[2])
+		love.graphics.setColor(0,0,0,menu.time[2])
 		love.graphics.rectangle("fill",0,0,sW,sH)
 	end	
 end

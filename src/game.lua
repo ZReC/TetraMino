@@ -1,6 +1,6 @@
 game = {}
-
-game.version = "1.1.1.0"
+game.name = "Tetramino"
+game.version = "1.2.0.0"
 game.state = "start"
 game.oldstate = "start"
 
@@ -40,7 +40,7 @@ function game.start(t, v)
 	end
 	game.state = "pause"
 	game.pause.s = 1
-	game.bg = {32,32,64}
+	game.bg = {1/8,1/8,1/4}
 	love.graphics.setBackgroundColor(game.bg)
 
 	game.pause.m = true
@@ -53,9 +53,9 @@ function game.start(t, v)
 		game.play.tP:setParticleLifetime(16)
 		game.play.tP:setEmissionRate(8)
 		game.play.tP:setSizes(0,wScale,wScale)
-		game.play.tP:setColors(255,255,255,255, 255,255,255,0)
+		game.play.tP:setColors(1,1,1,1, 1,1,1,0)
 		game.play.tP:setLinearAcceleration(1, 1, -1, -1)
-		game.play.tP:setAreaSpread("uniform", sW, sH)
+		game.play.tP:setEmissionArea("uniform", sW, sH)
 		game.play.tP:setPosition(0,0)
 	end
 
@@ -133,7 +133,7 @@ function game.play.update(dt)
 end
 
 function game.play.draw()
-	love.graphics.setColor(255,255,255,game.pause.q and 255*(1-game.pause.t[3]) or 255)
+	love.graphics.setColor(1,1,1,game.pause.q and (1-game.pause.t[3]) or 1)
 	love.graphics.draw(game.play.tP, 0,0)
 end
 
@@ -196,7 +196,7 @@ function game.pause.update(dt)
 				end
 			end
 			game.pause.win.textWinner.t = love.graphics.newText(font.ariblk4, #game.pause.win.w==1 and "GAME OVER" or game.pause.win.winner==false and "TIED" or game.pause.win.w[game.pause.win.winner].pName.d)
-			game.pause.win.textWinner.c = love.graphics.newCanvas(sW,sH,"normal",0)
+			game.pause.win.textWinner.c = love.graphics.newCanvas(sW,sH,{},0)
 			game.pause.win.textWinner.c:setFilter("nearest", "nearest",0)
 			
 			if #game.pause.win.w>1 and game.pause.win.winner~=false then
@@ -299,7 +299,7 @@ function game.pause.draw()
 		game.pause.blur.v:send("steps",4)
 	end
 
-	love.graphics.setColor(255,255,255)
+	love.graphics.setColor(1,1,1)
 
 	if game.pause.eA then
 		love.graphics.draw(game.pause.blur.c1[1])
@@ -316,17 +316,17 @@ function game.pause.draw()
 			love.graphics.draw(game.pause.win.t[i], ((sW/(#game.pause.win.t*2))+(sW/(#game.pause.win.t))*(i-1)), mH*s, 0, 1,1, game.pause.win.t[i]:getWidth()/2, game.pause.win.t[i]:getHeight()/2)
 
 			for j=1, #game.pause.win.bPoints[i] do
-				love.graphics.setColor(255,255,255,game.pause.win.bPoints[i][j]*(1-game.pause.t[4]))
+				love.graphics.setColor(1,1,1,game.pause.win.bPoints[i][j]*(1-game.pause.t[4]))
 				love.graphics.points(((sW/(#game.pause.win.t*2))+(sW/(#game.pause.win.t))*(i-1))+j-game.pause.win.t[i]:getWidth()/2, mH+game.pause.win.t[i]:getHeight()/2+game.pause.win.st[i][1]:getHeight()/2)
 				love.graphics.points(((sW/(#game.pause.win.t*2))+(sW/(#game.pause.win.t))*(i-1))+j-game.pause.win.t[i]:getWidth()/2, mH+game.pause.win.t[i]:getHeight()/2+game.pause.win.st[i][1]:getHeight()/2+1)
 			end
 
 			for j=1, #game.pause.win.bPoints[i] do
-				love.graphics.setColor(255,255,255,game.pause.win.bPoints[i][j]*(1-game.pause.t[4]))
+				love.graphics.setColor(1,1,1,game.pause.win.bPoints[i][j]*(1-game.pause.t[4]))
 				love.graphics.points(((sW/(#game.pause.win.t*2))+(sW/(#game.pause.win.t))*(i-1))+j-game.pause.win.t[i]:getWidth()/2, mH+game.pause.win.t[i]:getHeight()*6+game.pause.win.tim.t[i][1]:getHeight()/2)
 			end
 			
-			love.graphics.setColor(255,255,255)
+			love.graphics.setColor(1,1,1)
 			if game.pause.t[4] < 0 then
 				s = outBounce(game.pause.win.s[2])
 				love.graphics.draw(game.pause.win.st[i][1], ((sW/(#game.pause.win.t*2))+(sW/(#game.pause.win.t))*(i-1))-mW, mH+game.pause.win.t[i]:getHeight(), 0, s,s, 0, game.pause.win.st[i][1]:getHeight()/2)
@@ -381,14 +381,14 @@ function game.pause.draw()
 			end
 		)
 		
-		love.graphics.setColor(0,0,0,64*game.pause.win.cp[7])
+		love.graphics.setColor(0,0,0,(1/4)*game.pause.win.cp[7])
 		love.graphics.rectangle("fill",0,0,sW,sH)
-		love.graphics.setColor(255,255,255)
+		love.graphics.setColor(1,1,1)
 		
 		love.graphics.stencil(
 			function()
 				love.graphics.setShader(mask_shader)
-				love.graphics.setColor(255,255,255)
+				love.graphics.setColor(1, 1, 1)
 				love.graphics.draw(game.pause.win.textWinner.c)
 				love.graphics.setShader()
 			end, "replace", 1)
@@ -397,13 +397,13 @@ function game.pause.draw()
 
 		local h,s,v = rgbToHsv(love.graphics.getBackgroundColor())
 		h,s,v = hsvToRgb(h,s,v)
-		love.graphics.setColor(h,s,v,192*game.pause.win.cp[7])		
+		love.graphics.setColor(h,s,v,(3/4)*game.pause.win.cp[7])		
 		love.graphics.rectangle("fill",0,0,sW,sH)
 
 		love.graphics.setStencilTest()
 
 		local redraw = function(f)
-							love.graphics.setColor(255,255,255,255*f)
+							love.graphics.setColor(1,1,1,f)
 							love.graphics.draw(game.pause.text.q,sW/2,sH/1.3,0,1,1,game.pause.text.q:getWidth()/2,game.pause.text.q:getHeight()/2)
 						end
 		if game.pause.win.textWinner.yW then
@@ -414,12 +414,12 @@ function game.pause.draw()
 	end
 	
 	if game.pause.m then
-		love.graphics.setColor(255,255,255,255*game.pause.t[2])
+		love.graphics.setColor(1,1,1,game.pause.t[2])
 		love.graphics.rectangle("fill",0,0,sW,sH)
 	elseif game.pause.e then
 		
 	elseif game.pause.t[2] > 0 then
-		love.graphics.setColor(0,0,0,128*game.pause.t[2])
+		love.graphics.setColor(0,0,0,(1/4)*game.pause.t[2])
 		love.graphics.push()
 		love.graphics.translate(sW,0)
 		love.graphics.scale(-1, 1)
@@ -429,16 +429,16 @@ function game.pause.draw()
 		love.graphics.pop()
 
 		love.graphics.rectangle("fill",0,0,sW,sH)
-		love.graphics.setColor(255,255,255,128*game.pause.t[2])
+		love.graphics.setColor(1,1,1,(1/4)*game.pause.t[2])
 		love.graphics.draw(game.pause.text.p,-game.pause.text.p:getHeight()+(game.pause.t[2]*sW/8),sH/8)
 			
-		love.graphics.setColor(255,255,255,(game.pause.s == 1 and 255 or 128)*game.pause.t[2])
+		love.graphics.setColor(1,1,1,(game.pause.s == 1 and 1 or (1/2))*game.pause.t[2])
 		love.graphics.draw(game.pause.text.r,sW+game.pause.text.r:getHeight()-(game.pause.t[2]*(sW/4+game.pause.text.r:getHeight())),sH/1.5)
-		love.graphics.setColor(255,255,255,(game.pause.s == 2 and 255 or 128)*game.pause.t[2])
+		love.graphics.setColor(1,1,1,(game.pause.s == 2 and 1 or (1/2))*game.pause.t[2])
 		love.graphics.draw(game.pause.text.q,sW+game.pause.text.q:getHeight()-(game.pause.t[2]*(sW/4+game.pause.text.q:getHeight())),sH/1.4)
 	end
 	if game.pause.q then 
-		love.graphics.setColor(0,0,0,255*game.pause.t[3])
+		love.graphics.setColor(0,0,0,game.pause.t[3])
 		love.graphics.rectangle("fill",0,0,sW,sH)
 	end
 end

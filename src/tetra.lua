@@ -1,20 +1,84 @@
 tetra = class:new()
 
-function tetra:init(p, w, c)
-	self.piece 		= p
+function tetra:init(pieceId, whoDidMe)
+	local tetraForms = {
+		--cube
+		[1] =	{
+			[1] = {true,true},
+			[2] = {true,true}
+		},
+	
+		-- l1
+		
+		[2] =	{
+			[1] = {true,false,false},
+			[2] = {true,true,true}
+		},
+	
+		-- l2
+		
+		[3] =	{
+			[1] = {false,false,true},
+			[2] = {true,true,true}
+		},
+		
+		-- s1
+		
+		[4] =	{
+			[1] = {true,true,false},
+			[2] = {false,true,true},
+		},
+	
+		-- s2
+	
+		[5] =	{
+			[1] = {false,true,true},
+			[2] = {true,true,false}
+		},
+		
+		-- t
+		
+		[6] =	{
+			[1] = {true,true,true},
+			[2] = {false,true,false}
+		},
+	
+		-- g
+	
+		[7] =	{
+			[1] = {false,false,false,false},
+			[2] = {true,true,true,true},
+			[3] = {false,false,false,false},
+			[4] = {false,false,false,false}
+		},	
+	}
 
-	self.world		= w
+	self.piece 		= tetraForms[pieceId]
+
+	self.world		= whoDidMe
 
 	self.k			= self.world.k
 	self.position	= {["x"] = self.world.startPos, ["y"] = 0}
 	self.yfloat		= 0
-	self.c			= c or {love.math.random(64,255),love.math.random(64,255),love.math.random(64,255)}
+	self.defColors	= {
+		{9/20, 11/20, 3/4},
+		{1/8, 2/3, 3/10},
+		{9/10, 1/10, 3/20},
+		{19/20, 17/20, 4/10},
+		{1, 1/2, 3/20},
+		{13/20, 3/10, 13/20},
+		{0, 5/8, 9/10},
+	}
+
+	self.c			= self.defColors[pieceId or 1]
+	self.a			= 0
 	self.vel		= {2, 2}
 	
 	self.sStart		= {2,0}
 	
 	self.print		= true
-	self.inGame		= true
+	self.inGame		= false
+	self.isDrawn	= false
 end
 
 function tetra:contact(piece, x, y)
@@ -154,6 +218,24 @@ function tetra:setPiece(x,y)
 end
 
 function tetra:update(dt)
+	if self.a ~= 1 and self.isDrawn then
+		local a = self.a+dt*self.vel[2]
+
+		if a < 1/2 then
+			self.a = a
+		elseif self.inGame then
+			if a < 1 then
+				self.a = a
+			else
+				self.a = 1
+			end
+		else
+			self.a = 1/2
+		end	
+	end
+
+	if not self.inGame then return end
+
 	local gSize = self.world.gSize
 
 	local touch = self:contact(self.piece, self.position.x, self.position.y)
@@ -192,7 +274,7 @@ function tetra:draw()
 							if p[i][j] then					
 								local x, y = wx+(((self.position.x*gSize)+gSize*j)-gSize),wy+(((_y*gSize)+gSize*i)-gSize)
 								
-								love.graphics.setColor(r,g,b,128*self.sStart[2])
+								love.graphics.setColor(r,g,b,(1/2)*self.sStart[2])
 								love.graphics.draw(gfx.shadow, x, y, 0, gSize/64)
 							end
 						end
@@ -209,185 +291,10 @@ function tetra:draw()
 				if p[i][j] then					
 					local x, y = wx+(((self.position.x*gSize)+gSize*j)-gSize),wy+(((self.position.y*gSize)+gSize*i)-gSize)
 					
-					love.graphics.setColor(r,g,b, self.position.y>0 and 255 or 128+(128*self.yfloat))
+					love.graphics.setColor(r,g,b, self.a) 
 					love.graphics.draw(gfx.tetra, x, y, 0, gSize/64)
 				end
 			end
 		end
 	end
 end
-
-tetraForms = {
-	--cube
-	[1] =	{
-		[1] = {true,true},
-		[2] = {true,true}
-	},
-
-	-- l1
-	
-	[2] =	{
-		[1] = {true,false,false},
-		[2] = {true,true,true}
-	},
-
-	-- l2
-	
-	[3] =	{
-		[1] = {false,false,true},
-		[2] = {true,true,true}
-	},
-	
-	-- s1
-	
-	[4] =	{
-		[1] = {true,true,false},
-		[2] = {false,true,true},
-	},
-
-	-- s2
-
-	[5] =	{
-		[1] = {false,true,true},
-		[2] = {true,true,false}
-	},
-	
-	-- t
-	
-	[6] =	{
-		[1] = {true,true,true},
-		[2] = {false,true,false}
-	},
-
-	-- g
-
-	[7] =	{
-		[1] = {false,false,false,false},
-		[2] = {true,true,true,true},
-		[3] = {false,false,false,false},
-		[4] = {false,false,false,false}
-	},	
-}
-
---[[
-tetraForms = {
-	--cube
-	[1] =	{
-		{-- 0º
-			[1] = {true,true},
-			[2] = {true,true}
-		}
-	},
-
-	-- l1
-	
-	[2] =	{
-		{-- 0º
-			[1] = {true,false,false},
-			[2] = {true,true,true}
-		},
-		{-- 90º
-			[1] = {true,true},
-			[2] = {true,false},
-			[3] = {true,false}
-		},
-		{-- 180º
-			[1] = {true,true,true},
-			[2] = {false,false,true}
-		},
-		{-- 270º
-			[1] = {false,true},
-			[2] = {false,true},
-			[3] = {true,true}
-		}
-	},
-
-	-- l2
-	
-	[3] =	{
-		{-- 0º
-			[1] = {false,false,true},
-			[2] = {true,true,true}
-		},
-		{-- 90º
-			[1] = {true,false},
-			[2] = {true,false},
-			[3] = {true,true}
-		},
-		{-- 180º
-			[1] = {true,true,true},
-			[2] = {true,false,false}
-		},
-		{-- 270º
-			[1] = {true,true},
-			[2] = {true,false},
-			[3] = {true,false}
-		}
-	},
-	
-	-- s1
-	
-	[4] =	{
-		{-- 0º
-			[1] = {true,true,false},
-			[2] = {false,true,true}
-		},
-		{-- 90º
-			[1] = {false,true},
-			[2] = {true,true},
-			[3] = {true,false}
-		}
-	},
-
-	-- s2
-
-	[5] =	{
-		{-- 0º
-			[1] = {false,true,true},
-			[2] = {true,true,false}
-		},
-		{-- 90º
-			[1] = {true,false},
-			[2] = {true,true,},
-			[3] = {false,true}
-		}
-	},
-	
-	-- t
-	
-	[6] =	{
-		{-- 0º
-			[1] = {true,true,true},
-			[2] = {false,true,false}		
-		},
-		{-- 90º
-			[1] = {false,false,true},
-			[2] = {false,true,true},
-			[3] = {false,false,true}		
-		},
-		{-- 180º
-			[1] = {false,true,false},
-			[2] = {true,true,true}	
-		},
-		{-- 270º
-			[1] = {true,false,false},
-			[2] = {true,true,false},
-			[3] = {true,false,false}
-		}
-	},
-
-	-- g
-
-	[7] =	{
-		{-- 0º
-			[1] = {true,true,true,true}
-		},
-		{-- 90º
-			[1] = {true},
-			[2] = {true},
-			[3] = {true},
-			[4] = {true}
-		}
-	},	
-}
-]]
