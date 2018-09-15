@@ -1,6 +1,6 @@
 function love.conf(t)
     t.identity				= nil
-    t.version				= "0.10.0"
+    t.version				= "11.1"
     t.console				= false
     t.accelerometerjoystick	= true
     t.gammacorrect			= false
